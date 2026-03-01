@@ -6,6 +6,7 @@ import Navbar from "./Navbar";
 import { toast } from "react-toastify";
 import { loginSuccess, setDashboardData } from "../Redux/authSlice";
 import { FiEye, FiEyeOff } from "react-icons/fi";
+import { setEmployerData } from "../Redux/empDashSlice";
 
 function Login() {
   const [email, setEmail] = useState("");
@@ -56,12 +57,17 @@ function Login() {
         headers: { Authorization: `Bearer ${token}`, user: JSON.stringify(loginPayload) }
       });
 
+        
+
       console.log(dashResponse.data);
       
       dispatch(setDashboardData(dashResponse.data));
-      dispatch(loginSuccess({ res : dashResponse.data.message}));
+      dispatch(setEmployerData(dashResponse.data));
+      dispatch(loginSuccess({ res : dashResponse.data.message, token, email: loginPayload.email, password: loginPayload.password, role: loginPayload.role }));
       toast.success("Login Successful!");
       navigate(isEmployer ? "/employer-dashboard" : "/candidate-dashboard");
+      console.log(dashResponse.data.data.employer_id);
+
     } catch (error) {
       toast.error(error.response?.data?.error || error.message);
     } finally {

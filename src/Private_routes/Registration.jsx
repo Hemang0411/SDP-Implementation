@@ -204,7 +204,7 @@ function Registration() {
 
   const [uploadResponse, skillResponse] = await Promise.all([
     axios.post("https://skillbridge-backend-3-vqsm.onrender.com/api/users/register/upload-resume", uploadFormData),
-    axios.post("https://web-production-43897.up.railway.app/extract-skills", skillsFormData)
+    axios.post("https://janmejay.pythonanywhere.com/extract-skills", skillsFormData)
   ]);
 
   const extractedSkills = skillResponse.data.skills;
@@ -785,10 +785,10 @@ function Registration() {
               }`}
             >
               {loading
-                ? "⏳ Processing Registration..."
+                ? "Processing Registration"
                 : resumeUploading
-                ? "📤 Uploading Resume..."
-                : "✅ Agree & Complete Registration"}
+                ? "Uploading Resume"
+                : "Register"}
             </button>
           </form>
 

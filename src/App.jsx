@@ -8,6 +8,7 @@ import RegistrationEmail from "./components/RegistrationEmail";
 import VerifyEmail from "./Private_routes/VerifyEmail";
 import Candidate_Dashboard from "./Private_routes/Candidate_Dashboard";
 import Employer_Dashboard from "./Private_routes/Employer_Dashboard";
+import EmployerJobs from "./Private_routes/EmployerJobs"
 import ProtectedRoute from "./Private_routes/ProtectedRoute";
 import Navbar from "./components/Navbar";
 import EmployerProtected from "./Private_routes/EmployerProtected";
@@ -27,6 +28,8 @@ function App() {
           <Route path="/registration" element={<RegisterProtected><Registration /></RegisterProtected>} />
           <Route path="/candidate-dashboard" element={<ProtectedRoute><Candidate_Dashboard /></ProtectedRoute>} />
           <Route path="/employer-dashboard" element={<EmployerProtected><Employer_Dashboard /></EmployerProtected>} />
+          <Route path="/employer-jobs" element={<EmployerProtected><EmployerJobs /></EmployerProtected>} />
+
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
         <ToastContainer position="top-right" autoClose={2500} />

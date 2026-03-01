@@ -1,6 +1,12 @@
 import React, { useState } from "react";
 import { useSelector } from "react-redux";
+import axios from "axios";
 import Navbar from "../components/Navbar";
+import { setEmployerData } from "../Redux/empDashSlice";
+import { useNavigate } from "react-router-dom";
+import { ToastContainer, toast } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
+
 import {
   FiBriefcase,
   FiCheckCircle,
@@ -10,7 +16,6 @@ import {
   FiLinkedin,
 } from "react-icons/fi";
 
-/* Normal Stat Card */
 const Stat = ({ title, value, icon, color }) => (
   <div className="bg-white rounded-2xl p-6 shadow-sm hover:shadow-md transition flex items-center gap-4">
     <div className={`${color} text-2xl`}>{icon}</div>
@@ -23,8 +28,10 @@ const Stat = ({ title, value, icon, color }) => (
   </div>
 );
 
-/* Active Jobs Special Card */
-const ActiveJobsCard = ({ value, icon, onPostClick }) => (
+const ActiveJobsCard = ({ value, icon, onPostClick }) => {
+  const navigate = useNavigate();
+  
+  return (
   <div className="bg-white rounded-2xl p-6 shadow-sm hover:shadow-md transition flex flex-col gap-6">
     <div className="flex items-center justify-between">
       <div className="flex items-center gap-4">
@@ -32,24 +39,42 @@ const ActiveJobsCard = ({ value, icon, onPostClick }) => (
         <div className="text-2xl font-bold text-slate-800">{value}</div>
       </div>
 
+      {/* POST JOB BUTTON - SMALLER SIZE */}
       <button
         onClick={onPostClick}
-        className="flex items-center gap-2 px-4 py-2 bg-[#0a66c2] text-white rounded-lg text-xs font-bold hover:bg-[#084d91] transition"
+        className="flex items-center gap-2 px-4 py-2 border-2 border-[#0a66c2] bg-white text-[#0a66c2] rounded-lg text-sm font-bold hover:bg-[#eff6ff] hover:border-[#0a66c2] hover:shadow-md transition-all duration-200"
       >
-        <FiPlus />
+        <FiPlus className="w-3.5 h-3.5" />
         Post Job
       </button>
     </div>
 
-    <button className="w-full bg-blue-50 text-blue-600 py-2 rounded-lg text-xs font-bold hover:bg-blue-100 transition">
+    {/* EXISTING JOBS BUTTON - SMALLER SIZE */}
+    <button 
+      onClick={() => navigate('/employer-jobs')}
+      className="w-full bg-[#0a66c2] text-white py-2 rounded-lg text-sm font-bold hover:bg-[#084d91] transition-all duration-200 cursor-pointer"
+    >
       Existing Jobs
     </button>
   </div>
 );
 
+
+};
+
+
 const Employer_Dashboard = () => {
-  const companyName = useSelector((state) => state.auth.companyName);
-  const linkedin = useSelector((state) => state.auth.linkedin);
+  const { companyName, linkedin, employer_id } = useSelector(
+    (state) => state.empDash
+  );
+  const token = useSelector((state) => state.auth.token);
+  const authState = useSelector((state) => state.auth);
+  const { email, password, role } = useSelector((state) => state.auth);
+  const loginPayload = { 
+  email: email?.trim(), 
+  password: password, 
+  role: role?.toLowerCase() 
+};
 
   const [showJobForm, setShowJobForm] = useState(false);
 
@@ -87,17 +112,57 @@ const Employer_Dashboard = () => {
     return Object.keys(newErrors).length === 0;
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    if (validateForm()) {
-      const skills = formData.required_skills
-        .split(",")
-        .map((s) => s.trim().toLowerCase());
 
-      console.log("✅ New Job Posted:", {
-        ...formData,
-        required_skills: skills,
-      });
+    if (!validateForm()) return;
+
+    try {
+      if (!token) {
+        alert("You are not logged in. Please login again.");
+        return;
+      }
+    //   console.log({
+    //   employer_id: employer_id,
+    //   title: formData.title,
+    //   description: formData.description,
+    //   required_skills: formData.required_skills
+    //     .split(",")
+    //     .map((s) => s.trim().toLowerCase()),
+    //   job_type: formData.job_type,
+    //   location: formData.location,
+    //   salary_range: formData.salary_range,
+    // },)
+
+    // console.log("Employer ID : ", employer_id);
+    // console.log("Token:", token);
+    // console.log("User header:", JSON.stringify(loginPayload));
+    // console.log("Full request headers:", {
+    //   Authorization: `Bearer ${token}`,
+    //   user: JSON.stringify(loginPayload)
+    // });
+
+    const response = await axios.post("https://skillbridge-backend-3-vqsm.onrender.com/api/employer-detail/jobs",
+    {
+      employer_id: employer_id,
+      title: formData.title,
+      description: formData.description,
+      required_skills: formData.required_skills
+        .split(",")
+        .map((s) => s.trim().toLowerCase()),
+      job_type: formData.job_type,
+      location: formData.location,
+      salary_range: formData.salary_range,
+    },
+    {
+       headers: {
+        Authorization: `Bearer ${token}`,
+        user : JSON.stringify(loginPayload)
+      },
+    }
+);
+
+     toast.success("Job posted successfully!");
 
       setFormData({
         title: "",
@@ -110,6 +175,12 @@ const Employer_Dashboard = () => {
 
       setShowJobForm(false);
       setErrors({});
+
+    } catch (error) {
+      console.error(
+        "Error posting job:",
+        error.response?.data || error.message
+      );
     }
   };
 
@@ -159,7 +230,7 @@ const Employer_Dashboard = () => {
         {/* STATS */}
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
           <ActiveJobsCard
-            value="5"
+            value="0"      
             icon={<FiBriefcase />}
             onPostClick={() => setShowJobForm(true)}
           />
@@ -303,6 +374,7 @@ const Employer_Dashboard = () => {
           </div>
         </div>
       )}
+      <ToastContainer position="top-right" autoClose={3000} />
     </div>
   );
 };

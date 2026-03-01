@@ -38,7 +38,7 @@ function RegistrationEmail() {
     setLoading(true);
     
     try {
-      console.log("🚀 Sending email verification to:", email);
+      // console.log("Sending email verification to:", email);
       
       const response = await axios.post(
         "https://skillbridge-backend-3-vqsm.onrender.com/api/users/register/send-email",
@@ -51,20 +51,19 @@ function RegistrationEmail() {
         }
       );
       
-      console.log("✅ Email API Success:", response.data);
+      // console.log("✅ Email API Success:", response.data);
       
-      // Store email in Redux
       dispatch(setRegistrationData({ 
         email: email.trim()
       }));
 
       dispatch(emailauthentication("email_verified"));
       
-      toast.success("✅ Code sent! Check your inbox (and spam folder).");
+      toast.success("Code sent! Check your inbox (and spam folder).");
       navigate("/verify-email");
       
     } catch (error) {
-      console.error("❌ Email API Error:", error.response?.data || error.message);
+      console.error("Email API Error:", error.response?.data || error.message);
       
       if (error.response?.status === 400) {
         toast.error(error.response.data?.message || "Invalid email format");
@@ -83,12 +82,12 @@ function RegistrationEmail() {
   return (
     <div className="flex items-center justify-center p-4 min-h-[calc(100vh-64px)]">
       <div className="w-full max-w-4xl flex flex-col lg:flex-row rounded-2xl shadow-xl bg-white border border-slate-200 overflow-hidden">
-        {/* ORIGINAL LEFT IMAGE SECTION - RESTORED */}
+        {/* LEFT IMAGE SECTION */}
         <div className="lg:w-1/2 flex items-center justify-center p-10 bg-white">
           <img src={Image} alt="Mail" className="w-64 h-64 object-contain" />
         </div>
         
-        {/* ORIGINAL RIGHT FORM SECTION - ENHANCED FUNCTIONALITY */}
+        {/* RIGHT FORM SECTION */}
         <div className="lg:w-1/2 p-10 flex flex-col justify-center">
           <h1 className="text-2xl font-bold text-slate-800 text-center mb-8">Join SkillBridge</h1>
           
@@ -123,7 +122,7 @@ function RegistrationEmail() {
             </button>
           </form>
           
-          {/* ORIGINAL FOOTER - RESTORED */}
+          {/* FOOTER */}
           <p className="text-center mt-6 text-sm text-slate-500">
             Already have an account? <Link to="/login" className="text-[#0a66c2] font-bold">Sign in</Link>
           </p>

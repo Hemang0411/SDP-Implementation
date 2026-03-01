@@ -2,14 +2,16 @@ import { createSlice } from "@reduxjs/toolkit";
 
 const initialState = {
  
+  token: null,
+  email : null,
+  password : null,
+  role : null,
   isAuthenticated: false,
   employerAuth : false,
   dashboardData: null,
   logAuth : false,
   emailAuth:false,
-  verifyAuth:false,
-  userName: null,
-  companyName: null,
+  verifyAuth:false, 
 };
 
 const authSlice = createSlice({
@@ -22,13 +24,19 @@ const authSlice = createSlice({
         { 
         state.isAuthenticated = true;
         state.logAuth = true;
-        state.userName = action.payload.name;
+        state.token = action.payload.token; 
+        state.email = action.payload.email;
+        state.password = action.payload.password;
+        state.role = action.payload.role;
       }
       else if(action.payload.res === "successful_employer")
       {
         state.employerAuth = true;
         state.logAuth = true;
-        state.companyName = action.payload.name;
+        state.token = action.payload.token; 
+        state.email = action.payload.email;
+        state.password = action.payload.password;
+        state.role = action.payload.role;   
       }
     },
     setDashboardData: (state, action) => {
@@ -39,10 +47,9 @@ const authSlice = createSlice({
       state.dashboardData = null;
       state.employerAuth = false;
       state.logAuth = false;
-      state.userName = null;
-      state.companyName = null;
       state.verifyAuth = false; 
       state.emailAuth = false;
+      state.token = null;
     },
     emailauthentication: (state, action) => {
       if(action.payload === "email_verified"){
@@ -57,5 +64,5 @@ const authSlice = createSlice({
   }
 });
 
-export const { loginSuccess, setDashboardData, logout,emailauthentication, verifyauthentication } = authSlice.actions;
+export const { loginSuccess, setDashboardData, logout, emailauthentication, verifyauthentication } = authSlice.actions;
 export default authSlice.reducer;

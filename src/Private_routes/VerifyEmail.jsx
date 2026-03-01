@@ -1,7 +1,7 @@
 import React, { useState, useRef, useEffect } from "react";
-import { useNavigate } from "react-router-dom";  // ✅ Removed useLocation (no longer needed)
+import { useNavigate } from "react-router-dom"; 
 import { useDispatch, useSelector } from "react-redux";
-import { setRegistrationData } from "../Redux/registrationSlice";  // ✅ Use main action
+import { setRegistrationData } from "../Redux/registrationSlice";
 import axios from "axios";
 import { FiMail, FiRefreshCw, FiCheckCircle } from "react-icons/fi";
 import Navbar from "../components/Navbar";
@@ -11,8 +11,6 @@ import { verifyauthentication } from "../Redux/authSlice";
 function VerifyEmail() {
   const navigate = useNavigate();
   const dispatch = useDispatch();
-
-  // ✅ Get email directly from Redux (set in RegistrationEmail)
   const reduxEmail = useSelector((state) => state.registration.email);
 
   const [otp, setOtp] = useState(new Array(6).fill(""));
@@ -21,7 +19,6 @@ function VerifyEmail() {
 
   const inputRefs = useRef([]);
 
-  // ✅ Check for reduxEmail instead of tempEmail/location
   useEffect(() => {
     if (!reduxEmail) navigate("/register-email", { replace: true });
   }, [reduxEmail, navigate]);
@@ -44,7 +41,6 @@ function VerifyEmail() {
     }
   };
 
-  // ✅ Store verification code in main Redux state
   const handleVerify = async (e) => {
     e.preventDefault();
 
@@ -61,7 +57,7 @@ function VerifyEmail() {
       const response = await axios.post(
         "https://skillbridge-backend-3-vqsm.onrender.com/api/users/register/verify-code",
         JSON.stringify({
-          email: reduxEmail,  // ✅ Use reduxEmail
+          email: reduxEmail, 
           verificationCode: finalOtp,
         }),
         {
@@ -71,10 +67,9 @@ function VerifyEmail() {
         }
       );
 
-      // ✅ Store verification code in main Redux state
       dispatch(setRegistrationData({ verificationCode: finalOtp }));
       dispatch(verifyauthentication("Verification successful")); 
-      console.log("Verification successful:", response.data);
+      // console.log("Verification successful:", response.data);
 
       toast.success("Email verified successfully!");
 
@@ -91,7 +86,7 @@ function VerifyEmail() {
   };
 
   const handleResend = async () => {
-    if (!reduxEmail) {  // ✅ Use reduxEmail
+    if (!reduxEmail) { 
       toast.error("Email not found. Please register again.");
       return;
     }
@@ -101,7 +96,7 @@ function VerifyEmail() {
 
       await axios.post(
         "https://skillbridge-backend-3-vqsm.onrender.com/api/users/register/send-email",
-        { email: reduxEmail }  // ✅ Use reduxEmail
+        { email: reduxEmail }  
       );
 
       toast.success("Verification code resent successfully!");
@@ -132,7 +127,7 @@ function VerifyEmail() {
           <p className="text-slate-400 text-sm mb-8">
             Enter the 6-digit code sent to <br />
             <span className="text-slate-700 font-semibold">
-              {reduxEmail}  {/* ✅ Use reduxEmail */}
+              {reduxEmail}  
             </span>
           </p>
 
