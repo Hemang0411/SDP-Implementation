@@ -51,7 +51,7 @@ function RegistrationEmail() {
         }
       );
       
-      // console.log("✅ Email API Success:", response.data);
+      console.log("✅ Email API Success:", response.data);
       
       dispatch(setRegistrationData({ 
         email: email.trim()
