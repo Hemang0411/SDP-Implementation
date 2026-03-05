@@ -1,8 +1,7 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useSelector } from "react-redux";
 import axios from "axios";
 import Navbar from "../components/Navbar";
-import { setEmployerData } from "../Redux/empDashSlice";
 import { useNavigate } from "react-router-dom";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
@@ -58,10 +57,7 @@ const ActiveJobsCard = ({ value, icon, onPostClick }) => {
     </button>
   </div>
 );
-
-
 };
-
 
 const Employer_Dashboard = () => {
   const { companyName, linkedin, employer_id } = useSelector(
@@ -88,6 +84,32 @@ const Employer_Dashboard = () => {
   });
 
   const [errors, setErrors] = useState({});
+  const [jobCount, setJobCount] = useState(0);
+  const [loadingJobCount, setLoadingJobCount] = useState(false);
+
+  const fetchJobCount = async () => {
+    if (!employer_id || !token) return;
+    
+    try {
+      setLoadingJobCount(true);
+      const response = await axios.get(
+        `https://skillbridge-backend-3-vqsm.onrender.com/api/employer-detail/All-jobs?employer_id=${employer_id}`,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            user: JSON.stringify(loginPayload),
+          },
+        }
+      );
+      setJobCount(response.data.jobs?.length || 0);
+    } catch (error) {
+      console.error("Error fetching job count:", error);
+      setJobCount(0);
+    } finally {
+      setLoadingJobCount(false);
+    }
+  };
+
 
   const isFormComplete =
     formData.title.trim() &&
@@ -122,25 +144,6 @@ const Employer_Dashboard = () => {
         alert("You are not logged in. Please login again.");
         return;
       }
-    //   console.log({
-    //   employer_id: employer_id,
-    //   title: formData.title,
-    //   description: formData.description,
-    //   required_skills: formData.required_skills
-    //     .split(",")
-    //     .map((s) => s.trim().toLowerCase()),
-    //   job_type: formData.job_type,
-    //   location: formData.location,
-    //   salary_range: formData.salary_range,
-    // },)
-
-    // console.log("Employer ID : ", employer_id);
-    // console.log("Token:", token);
-    // console.log("User header:", JSON.stringify(loginPayload));
-    // console.log("Full request headers:", {
-    //   Authorization: `Bearer ${token}`,
-    //   user: JSON.stringify(loginPayload)
-    // });
 
     const response = await axios.post("https://skillbridge-backend-3-vqsm.onrender.com/api/employer-detail/jobs",
     {
@@ -175,6 +178,7 @@ const Employer_Dashboard = () => {
 
       setShowJobForm(false);
       setErrors({});
+      fetchJobCount();
 
     } catch (error) {
       console.error(
@@ -189,6 +193,10 @@ const Employer_Dashboard = () => {
     setFormData((prev) => ({ ...prev, [name]: value }));
     if (errors[name]) setErrors((prev) => ({ ...prev, [name]: "" }));
   };
+
+  useEffect(() => {
+  fetchJobCount();
+  }, [employer_id, token]);
 
   return (
     <div className="min-h-screen bg-[#f3f4f6]">
@@ -230,7 +238,7 @@ const Employer_Dashboard = () => {
         {/* STATS */}
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
           <ActiveJobsCard
-            value="0"      
+            value={loadingJobCount ? "..." : jobCount}      
             icon={<FiBriefcase />}
             onPostClick={() => setShowJobForm(true)}
           />

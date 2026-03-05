@@ -12,6 +12,7 @@ const initialState = {
   logAuth : false,
   emailAuth:false,
   verifyAuth:false, 
+  forgotAuth:false,
 };
 
 const authSlice = createSlice({
@@ -61,8 +62,14 @@ const authSlice = createSlice({
         state.verifyAuth = true;
       }
     },
+    forgotauthentication : (state,action) => {
+      if(action.payload === "email_verified")
+      {
+        state.forgotAuth = true;
+      }
+    }
   }
 });
 
-export const { loginSuccess, setDashboardData, logout, emailauthentication, verifyauthentication } = authSlice.actions;
+export const { loginSuccess, setDashboardData, logout, emailauthentication, verifyauthentication, forgotauthentication } = authSlice.actions;
 export default authSlice.reducer;

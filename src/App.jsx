@@ -3,6 +3,9 @@ import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import Home from "./components/Home";
 import Login from "./components/Login";
+import ForgotPasswordEmail from "./components/ForgotPasswordEmail";
+import ForgotPasswordOTP from "./Private_routes/ForgotPasswordOTP";
+import ForgotPasswordMain from "./Private_routes/ForgotPasswordMain"
 import Registration from "./Private_routes/Registration";
 import RegistrationEmail from "./components/RegistrationEmail";
 import VerifyEmail from "./Private_routes/VerifyEmail";
@@ -14,6 +17,7 @@ import Navbar from "./components/Navbar";
 import EmployerProtected from "./Private_routes/EmployerProtected";
 import VerifyProtected from "./Private_routes/VerifyProtected";
 import RegisterProtected from "./Private_routes/RegisterProtected";
+import ForgotProtected from "./Private_routes/ForgotProtected";
 
 function App() {
   return (
@@ -23,6 +27,9 @@ function App() {
         <Routes>
           <Route path="/" element={<Home />} />
           <Route path="/login" element={<Login />} />
+          <Route path="/forgot-password-email" element={<ForgotPasswordEmail />} />
+          <Route path="/forgot-password-otp" element={<ForgotProtected><ForgotPasswordOTP /></ForgotProtected>} />  
+          <Route path="/forgot-password-main" element={<ForgotProtected><ForgotPasswordMain /></ForgotProtected>} />                  
           <Route path="/register-email" element={<RegistrationEmail />} />
           <Route path="/verify-email" element={<VerifyProtected><VerifyEmail /></VerifyProtected>} />
           <Route path="/registration" element={<RegisterProtected><Registration /></RegisterProtected>} />
