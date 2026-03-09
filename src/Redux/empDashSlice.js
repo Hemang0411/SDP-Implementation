@@ -13,13 +13,11 @@ const empDashSlice = createSlice({
   initialState,
   reducers: {
     setEmployerData: (state, action) => {
-      // console.log(action.payload);
       state.companyName = action.payload.data.company_name;
       state.linkedin = action.payload.data.linkedin_url;
       state.employer_id = action.payload.data.employer_id;
       state.full_name = action.payload.data.full_name;
       state.company_description = action.payload.data.company_description;
-      // console.log(state.companyName,state.employer_id);
     },
   },
 });

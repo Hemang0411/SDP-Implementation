@@ -1,13 +1,13 @@
-import React, { useState, useRef, useEffect } from "react";
-import { useNavigate } from "react-router-dom"; 
+import axios from "axios";
+import { useEffect, useRef, useState } from "react";
+import { FiMail, FiRefreshCw } from "react-icons/fi";
 import { useSelector } from "react-redux";
+import { useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
-import { FiMail, FiRefreshCw, FiCheckCircle } from "react-icons/fi";
 
 function ForgotPasswordOTP() {
   const navigate = useNavigate();
-  const reduxEmail = useSelector((state) => state.registration.email);
-
+  const email = useSelector((state) => state.auth.email);
   const [otp, setOtp] = useState(new Array(6).fill(""));
   const [loading, setLoading] = useState(false);
   const [resendLoading, setResendLoading] = useState(false);
@@ -15,11 +15,10 @@ function ForgotPasswordOTP() {
   const inputRefs = useRef([]);
 
   useEffect(() => {
-    if (!reduxEmail) {
-      toast.error("Please enter your email first to receive OTP.");
-      navigate("/forgot-password", { replace: true });
+    if (!email) {
+      navigate("/forgot-password-email");
     }
-  }, [reduxEmail, navigate]);
+  }, [email, navigate]);
 
   const handleOtpChange = (element, index) => {
     if (isNaN(element.value)) return;
@@ -45,29 +44,53 @@ function ForgotPasswordOTP() {
     const finalOtp = otp.join("");
 
     if (finalOtp.length < 6) {
-      toast.warn("Please enter the complete 6-digit code.");
       return;
     }
 
     setLoading(true);
 
-    // Simulate API delay for demo (no real API)
-    setTimeout(() => {
-      toast.success("Password reset code verified successfully!");
+    try {
+      await axios.post(
+        "https://skillbridge-backend-3-vqsm.onrender.com/api/forgot-password/verify-code",
+        {
+          email: email,
+          verificationCode: finalOtp,
+        },
+      );
+
+      toast.success("Password reset code verified successfully!", {
+        toastId: "otp-success",
+      });
+
+      setTimeout(() => {
+        navigate("/forgot-password-main");
+      }, 1500);
+    } catch (error) {
+      console.error(error);
+    } finally {
       setLoading(false);
-      // Navigate to reset password page
-      navigate("/reset-password", { replace: true });
-    }, 1500);
+    }
   };
 
   const handleResend = async () => {
     setResendLoading(true);
 
-    // Simulate resend delay
-    setTimeout(() => {
-      toast.success("Verification code resent successfully!");
+    try {
+      await axios.post(
+        "https://skillbridge-backend-3-vqsm.onrender.com/api/forgot-password/send-email",
+        {
+          email: email,
+        },
+      );
+
+      toast.success("Verification code resent successfully!", {
+        toastId: "resend-success",
+      });
+    } catch (error) {
+      console.error(error);
+    } finally {
       setResendLoading(false);
-    }, 1000);
+    }
   };
 
   return (
@@ -84,7 +107,7 @@ function ForgotPasswordOTP() {
         <p className="text-slate-400 text-sm mb-8">
           Enter the 6-digit code sent to <br />
           <span className="text-slate-700 font-semibold">
-            {reduxEmail || "your email"}  
+            {email || "your email"}
           </span>
         </p>
 
@@ -109,9 +132,7 @@ function ForgotPasswordOTP() {
               type="submit"
               disabled={loading}
               className={`w-full h-12 rounded-xl text-white font-bold transition-all shadow-md ${
-                loading
-                  ? "bg-slate-300"
-                  : "bg-[#0a66c2] hover:bg-[#084d91]"
+                loading ? "bg-slate-300" : "bg-[#0a66c2] hover:bg-[#084d91]"
               }`}
             >
               {loading ? "Verifying..." : "Verify Reset Code"}
@@ -123,12 +144,8 @@ function ForgotPasswordOTP() {
               disabled={resendLoading}
               className="flex items-center justify-center gap-2 mx-auto text-sm font-semibold text-[#0a66c2] hover:text-[#084d91] transition-colors disabled:opacity-50"
             >
-              <FiRefreshCw
-                className={resendLoading ? "animate-spin" : ""}
-              />
-              {resendLoading
-                ? "Resending..."
-                : "Resend verification code"}
+              <FiRefreshCw className={resendLoading ? "animate-spin" : ""} />
+              {resendLoading ? "Resending..." : "Resend verification code"}
             </button>
           </div>
         </form>

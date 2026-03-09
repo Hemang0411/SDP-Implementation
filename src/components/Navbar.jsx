@@ -58,7 +58,7 @@ const Navbar = () => {
           <Link to="/#about" className="text-sm font-medium text-slate-600 hover:text-[#0a66c2]">About</Link>
           <Link to="/#contact" className="text-sm font-medium text-slate-600 hover:text-[#0a66c2]">Contact</Link>
           {(isAuthenticated || employerAuth) && (
-            <NavLink to={employerAuth ? "/employer-dashboard" : "/candidate-dashboard"} className="text-sm font-medium text-slate-600 hover:text-slate-900">
+            <NavLink to={employerAuth ? "/employer-dashboard" : "/candidate-dashboard"} className="text-sm font-medium text-slate-600 hover:text-[#0a66c2]">
               Dashboard
             </NavLink>
           )}

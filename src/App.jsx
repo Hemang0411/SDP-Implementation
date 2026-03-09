@@ -18,6 +18,11 @@ import EmployerProtected from "./Private_routes/EmployerProtected";
 import VerifyProtected from "./Private_routes/VerifyProtected";
 import RegisterProtected from "./Private_routes/RegisterProtected";
 import ForgotProtected from "./Private_routes/ForgotProtected";
+import ViewMatchedDetails from "./Private_routes/ViewMatchedDetails";
+import CandidateProfile from "./Private_routes/CandidateProfile";
+import ViewMatched from "./Private_routes/ViewMatched";
+import ViewApplied from "./Private_routes/ViewApplied";
+import ViewAppliedDetails from "./Private_routes/ViewAppliedDetails";
 
 function App() {
   return (
@@ -34,6 +39,11 @@ function App() {
           <Route path="/verify-email" element={<VerifyProtected><VerifyEmail /></VerifyProtected>} />
           <Route path="/registration" element={<RegisterProtected><Registration /></RegisterProtected>} />
           <Route path="/candidate-dashboard" element={<ProtectedRoute><Candidate_Dashboard /></ProtectedRoute>} />
+          <Route path="/viewapplied" element={<ProtectedRoute><ViewApplied/></ProtectedRoute>} />
+          <Route path="/viewapplied-details" element={<ProtectedRoute><ViewAppliedDetails/></ProtectedRoute>} />
+          <Route path="viewmatched" element={<ProtectedRoute><ViewMatched /></ProtectedRoute>} />
+          <Route path="/candidate-profile" element={<ProtectedRoute><CandidateProfile /></ProtectedRoute>} />
+          <Route path="/viewmatched-details" element={<ProtectedRoute><ViewMatchedDetails /></ProtectedRoute>} />
           <Route path="/employer-dashboard" element={<EmployerProtected><Employer_Dashboard /></EmployerProtected>} />
           <Route path="/employer-jobs" element={<EmployerProtected><EmployerJobs /></EmployerProtected>} />
 

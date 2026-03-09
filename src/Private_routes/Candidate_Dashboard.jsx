@@ -1,60 +1,312 @@
-import React from "react";
-import { useSelector } from "react-redux";
+import axios from "axios";
+import { useCallback, useEffect, useState } from "react";
+import {
+  FiBriefcase,
+  FiCheckCircle,
+  FiChevronDown,
+  FiUser,
+} from "react-icons/fi";
+import { MdEmail, MdPerson, MdPhone } from "react-icons/md";
+import { useDispatch, useSelector } from "react-redux";
+import { useNavigate } from "react-router-dom";
+import { toast } from "react-toastify";
 import Navbar from "../components/Navbar";
-import { FiBriefcase, FiUser, FiCheckCircle } from "react-icons/fi";
 
 const Candidate_Dashboard = () => {
-  const userName = useSelector((state) => state.auth.userName);
+  const dispatch = useDispatch();
+  const navigate = useNavigate();
+  const {
+    candidate_id,
+    full_name,
+    phone,
+    linkedin_url,
+    resume,
+    github_url,
+    skills,
+  } = useSelector((state) => state.candDash);
+  const { token, email, password, role } = useSelector((state) => state.auth);
+
+  const [statsLoading, setStatsLoading] = useState(true);
+  const [showMoreSkills, setShowMoreSkills] = useState(false);
+  const [stats, setStats] = useState({
+    applied: 0,
+    matched: 0,
+    responses: 0,
+  });
+
+  const fetchApplications = useCallback(async () => {
+    if (!candidate_id || !token) return;
+
+    try {
+      setStatsLoading(true);
+      const response = await axios.get(
+        `https://skillbridge-backend-3-vqsm.onrender.com/api/candidate-detail/application-detail/${candidate_id}`,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            user: JSON.stringify({ email, password, role }),
+          },
+        },
+      );
+
+      const applications = response.data.data || [];
+
+      const statsData = {
+        applied:
+          applications.filter((app) => app.status === "Applied")?.length || 0,
+        matched:
+          applications.filter((app) => app.status === "Matched")?.length || 0,
+        responses:
+          applications.filter(
+            (app) => app.status !== "Applied" && app.status !== "Matched",
+          )?.length || 0,
+      };
+
+      setStats(statsData);
+      console.log("Data : ", response);
+    } catch (error) {
+      toast.error(
+        error.response?.data?.error || "Failed to fetch applications",
+      );
+    } finally {
+      setStatsLoading(false);
+    }
+  }, [candidate_id, token, email, password, role]);
+
+  useEffect(() => {
+    fetchApplications();
+  }, [fetchApplications]);
+
+  const handleViewMatched = () => {
+    navigate("/viewmatched", {
+      state: {
+        applications: [],
+        candidate_id,
+        type: "matched",
+        candidateName: full_name,
+        stats,
+      },
+    });
+  };
+
+  // NEW: handleViewApplied function matching the same pattern
+  const handleViewApplied = () => {
+    navigate("/viewapplied", {
+      state: {
+        applications: [],
+        candidate_id,
+        type: "applied",
+        candidateName: full_name,
+        stats,
+      },
+    });
+  };
+
+  const userName = full_name || "User";
+  const displaySkills = showMoreSkills
+    ? skills || []
+    : (skills || []).slice(0, 4);
 
   return (
     <div className="min-h-screen bg-[#f3f4f6]">
       <Navbar />
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-24 pb-12 overflow-hidden">
-        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between mb-8 gap-4">
+
+      <div className="max-w-7xl mx-auto px-3 sm:px-5 lg:px-6 pt-12 pb-12">
+        {/* Welcome */}
+        <div className="mb-6">
           <h1 className="text-xl font-bold text-slate-800">
-            Welcome, <span className="text-[#008bdc]">{userName ?? "User"}</span>
+            Welcome, <span className="text-[#008bdc]">{userName}</span>
           </h1>
-          <span className="text-[10px] font-bold px-3 py-1 bg-white border border-blue-200 text-blue-600 rounded uppercase">Candidate Portal</span>
         </div>
-        <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
-          <div className="lg:col-span-1 space-y-6">
-            <div className="bg-white border border-slate-200 rounded-2xl p-6 text-center shadow-sm">
-              <h3 className="font-bold text-slate-800 mb-2">Candidate</h3>
-              <p className="text-[10px] text-slate-400 uppercase mb-6">Job Seeker</p>
-              <button className="w-full bg-slate-800 text-white py-2 rounded-lg text-xs font-bold hover:bg-black transition">View Profile</button>
+
+        {/* ================= PROFILE SECTION ================= */}
+        <div
+          className={`bg-white border border-slate-200 rounded-2xl shadow-sm p-10 mb-8 flex flex-col lg:flex-row lg:items-start justify-between gap-6 transition-all duration-300 ${showMoreSkills ? "min-h-[520px]" : "min-h-[320px]"}`}
+        >
+          {/* Left Profile */}
+          <div className="flex flex-col flex-1 lg:flex-[2]">
+            {/* Icon + Profile Info */}
+            <div className="flex items-start gap-4">
+              {/* Icon */}
+              <div className="w-28 h-28 bg-slate-100 rounded-2xl flex items-center justify-center flex-shrink-0 mt-1">
+                <MdPerson className="text-slate-400 text-6xl" />
+              </div>
+
+              {/* Profile Info */}
+              <div className="space-y-2 mt-1">
+                <h3 className="text-3xl font-bold text-slate-800 truncate">
+                  {userName}
+                </h3>
+
+                <div className="flex items-center gap-2 text-base text-slate-600">
+                  <MdEmail className="text-slate-400 text-lg" />
+                  <span>{email}</span>
+                </div>
+
+                {phone && (
+                  <div className="flex items-center gap-2 text-base text-slate-600">
+                    <MdPhone className="text-slate-400 text-lg" />
+                    <span>{phone}</span>
+                  </div>
+                )}
+              </div>
+            </div>
+
+            {/* Skills below icon */}
+            {skills && skills.length > 0 && (
+              <div className="space-y-3 mt-6">
+                <h4 className="text-lg font-semibold text-slate-800">Skills</h4>
+
+                <div className="flex flex-wrap gap-2 max-w-[320px]">
+                  {displaySkills.map((skill, index) => (
+                    <span
+                      key={index}
+                      className="px-3 py-1.5 bg-slate-100 text-slate-700 rounded-full text-sm font-medium"
+                    >
+                      {skill}
+                    </span>
+                  ))}
+                </div>
+
+                {skills.length > 4 && (
+                  <button
+                    onClick={() => setShowMoreSkills(!showMoreSkills)}
+                    className="flex items-center gap-1 text-[#008bdc] text-sm font-medium hover:text-blue-600 transition-colors"
+                  >
+                    {showMoreSkills ? "Show Less" : "Show More"}
+                    <FiChevronDown
+                      className={`transition-transform ${showMoreSkills ? "rotate-180" : ""}`}
+                    />
+                  </button>
+                )}
+              </div>
+            )}
+          </div>
+
+          {/* Right Column - Social Links & Edit Profile */}
+          <div className="flex flex-col items-end gap-8 lg:w-80 flex-shrink-0">
+            {/* Social Links */}
+            <div className="space-y-2 w-full lg:w-auto text-right">
+              {linkedin_url && (
+                <a
+                  href={linkedin_url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="block text-[#0a66c2] hover:text-[#004182] font-medium text-sm transition-colors group hover:underline"
+                >
+                  LinkedIn Profile
+                </a>
+              )}
+
+              {github_url && (
+                <a
+                  href={github_url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="block text-gray-900 hover:text-gray-700 font-medium text-sm transition-colors group hover:underline"
+                >
+                  GitHub Profile
+                </a>
+              )}
+
+              {resume && (
+                <a
+                  href={resume}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="block text-slate-700 hover:text-slate-900 font-medium text-sm transition-colors group hover:underline"
+                >
+                  Download Resume
+                </a>
+              )}
+            </div>
+
+            {/* Divider */}
+            <div className="w-px h-24 bg-slate-10 hidden lg:block"></div>
+
+            {/* Edit Profile Button */}
+            <div className="mt-auto">
+              <button
+                onClick={() => navigate("/candidate-profile")}
+                className="bg-[#008bdc] text-white px-8 py-4 rounded-xl text-sm font-semibold hover:bg-blue-600 transition-all shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 whitespace-nowrap w-full lg:w-auto"
+              >
+                Edit Profile
+              </button>
             </div>
           </div>
-          <div className="lg:col-span-3 space-y-6">
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-              <StatWidget title="Applied" value="12" icon={<FiBriefcase />} color="text-blue-600" />
-              <StatWidget title="Interviews" value="3" icon={<FiCheckCircle />} color="text-green-600" />
-              <StatWidget title="Views" value="45" icon={<FiUser />} color="text-purple-600" />
+        </div>
+
+        {/* ================= STATS CARDS ================= */}
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-6 mb-8">
+          {/* Applied - NOW PROPERLY HANDLED */}
+          <div className="bg-white border border-slate-200 rounded-2xl shadow-sm p-5 flex flex-col justify-between hover:shadow-md transition-all">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center justify-center w-14 h-14 rounded-xl bg-blue-50 text-blue-600 text-2xl">
+                <FiBriefcase />
+              </div>
+              <span className="text-3xl font-bold text-slate-800">
+                {statsLoading ? "--" : stats.applied}
+              </span>
             </div>
-            <div className="bg-white border border-slate-200 rounded-2xl p-6 shadow-sm text-left">
-              <h3 className="font-bold text-slate-800 mb-6 border-b pb-4">Recommended Jobs</h3>
-              {[1, 2].map((job) => (
-                <div key={job} className="flex flex-col sm:flex-row sm:justify-between sm:items-center py-4 border-b last:border-0 hover:bg-slate-50 px-2 rounded-lg transition gap-4">
-                  <div>
-                    <h4 className="font-bold text-[#008bdc] text-sm">Software Engineer</h4>
-                    <p className="text-xs text-slate-500">LinkedIn • Remote • ₹15L - ₹20L</p>
-                  </div>
-                  <button className="text-xs font-bold text-[#008bdc] hover:underline w-full sm:w-auto">View Details</button>
-                </div>
-              ))}
+            <h3 className="mt-4 text-sm font-semibold text-slate-700">
+              Applied Jobs
+            </h3>
+            <button
+              onClick={handleViewApplied}  // ✅ Updated to use proper handler
+              className="mt-4 w-full bg-[#008bdc] text-white py-2 rounded-lg text-sm font-semibold hover:bg-blue-600 transition-all shadow-sm hover:shadow-md"
+              disabled={statsLoading}
+            >
+              View Applications
+            </button>
+          </div>
+
+          {/* Matched */}
+          <div className="bg-white border border-slate-200 rounded-2xl shadow-sm p-5 flex flex-col justify-between hover:shadow-md transition-all">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center justify-center w-14 h-14 rounded-xl bg-green-50 text-green-600 text-2xl">
+                <FiCheckCircle />
+              </div>
+              <span className="text-3xl font-bold text-slate-800">
+                {statsLoading ? "--" : stats.matched}
+              </span>
             </div>
+            <h3 className="mt-4 text-sm font-semibold text-slate-700">
+              Matched Jobs
+            </h3>
+            <button
+              onClick={handleViewMatched}
+              className="mt-4 w-full bg-[#008bdc] text-white py-2 rounded-lg text-sm font-semibold hover:bg-blue-600 transition-all shadow-sm hover:shadow-md"
+              disabled={statsLoading}
+            >
+              View Matches
+            </button>
+          </div>
+
+          {/* Company Response */}
+          <div className="bg-white border border-slate-200 rounded-2xl shadow-sm p-5 flex flex-col justify-between hover:shadow-md transition-all">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center justify-center w-14 h-14 rounded-xl bg-purple-50 text-purple-600 text-2xl">
+                <FiUser />
+              </div>
+              <span className="text-3xl font-bold text-slate-800">
+                {statsLoading ? "--" : stats.responses}
+              </span>
+            </div>
+            <h3 className="mt-4 text-sm font-semibold text-slate-700">
+              Company Responses
+            </h3>
+            <button
+              onClick={() => toast.info("Coming Soon!")}
+              className="mt-4 w-full bg-[#008bdc] text-white py-2 rounded-lg text-sm font-semibold hover:bg-blue-600 transition-all shadow-sm hover:shadow-md"
+              disabled={statsLoading}
+            >
+              View Responses
+            </button>
           </div>
         </div>
       </div>
     </div>
   );
 };
-
-const StatWidget = ({ title, value, icon, color }) => (
-  <div className="bg-white border border-slate-200 rounded-2xl p-4 text-center shadow-sm flex flex-col items-center">
-    <div className={`${color} text-xl mb-1`}>{icon}</div>
-    <div className="text-2xl font-bold text-slate-800">{value}</div>
-    <div className="text-[10px] uppercase font-bold text-slate-400">{title}</div>
-  </div>
-);
 
 export default Candidate_Dashboard;

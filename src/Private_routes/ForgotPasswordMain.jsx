@@ -1,12 +1,13 @@
-import React, { useState } from "react";
-import { useNavigate, Link } from "react-router-dom";
-import { toast } from "react-toastify";
-import { useSelector } from "react-redux";
+import axios from "axios";
+import { useState } from "react";
 import { FiEye, FiEyeOff, FiShield } from "react-icons/fi";
+import { useSelector } from "react-redux";
+import { Link, useNavigate } from "react-router-dom";
+import { toast } from "react-toastify";
 
 function ForgotPasswordMain() {
   const navigate = useNavigate();
-  const reduxEmail = useSelector((state) => state.registration.email);
+  const reduxEmail = useSelector((state) => state.auth.email); // Fixed: was state.registration.email
 
   const [newPassword, setNewPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
@@ -15,15 +16,15 @@ function ForgotPasswordMain() {
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [touched, setTouched] = useState({
     newPassword: false,
-    confirmPassword: false
+    confirmPassword: false,
   });
 
   const validatePassword = (password) => {
-    const regex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/;
+    const regex =
+      /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/;
     return regex.test(password);
   };
 
-  // Show errors only when user has typed AND field is invalid
   const getNewPasswordError = () => {
     if (!touched.newPassword || newPassword === "") return "";
     if (!validatePassword(newPassword)) {
@@ -52,34 +53,60 @@ function ForgotPasswordMain() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    
+
     const newPasswordError = getNewPasswordError();
     const confirmPasswordError = getConfirmPasswordError();
-    
+
     if (newPasswordError || confirmPasswordError) {
       toast.error(newPasswordError || confirmPasswordError);
       return;
     }
 
+    if (!reduxEmail) {
+      toast.error(
+        "Email not found. Please start the password reset process again.",
+      );
+      navigate("/forgot-password-email");
+      return;
+    }
+
     setLoading(true);
-    
-    setTimeout(() => {
-      toast.success("Password reset successfully! You can now login with your new password.");
+
+    try {
+      await axios.post(
+        "https://skillbridge-backend-3-vqsm.onrender.com/api/forgot-password/set-password",
+        {
+          email: reduxEmail,
+          newPassword: newPassword,
+        },
+      );
+
+      toast.success(
+        "Password reset successfully! You can now login with your new password.",
+      );
       navigate("/login", { replace: true });
+    } catch (error) {
+      toast.error("Failed to reset password. Please try again.");
+      console.error(error);
+    } finally {
       setLoading(false);
-    }, 1500);
+    }
   };
 
   // Button only visible/enabled when BOTH fields are valid
-  const isFormValid = newPassword && confirmPassword && 
-                     !getNewPasswordError() && 
-                     !getConfirmPasswordError();
+  const isFormValid =
+    newPassword &&
+    confirmPassword &&
+    !getNewPasswordError() &&
+    !getConfirmPasswordError();
 
   return (
     <div className="flex items-center justify-center p-4 min-h-[calc(100vh-64px)] bg-[#f3f4f6]">
       <div className="w-full max-w-sm bg-white shadow-xl rounded-xl p-6 sm:p-10 border border-slate-100 text-center pb-6">
         <div className="mb-6">
-          <h2 className="text-xl font-bold text-slate-800 mb-3">Reset Password</h2>
+          <h2 className="text-xl font-bold text-slate-800 mb-3">
+            Reset Password
+          </h2>
           <div className="w-12 h-12 bg-blue-50 text-[#0a66c2] rounded-full flex items-center justify-center text-2xl mx-auto mb-3">
             <FiShield />
           </div>
@@ -92,19 +119,21 @@ function ForgotPasswordMain() {
               New Password
             </label>
             <div className="relative">
-              <input 
-                type={showNewPassword ? "text" : "password"} 
+              <input
+                type={showNewPassword ? "text" : "password"}
                 value={newPassword}
-                onChange={(e) => handleInputChange("newPassword", e.target.value)}
+                onChange={(e) =>
+                  handleInputChange("newPassword", e.target.value)
+                }
                 className={`w-full border-b-2 py-1.5 outline-none transition-all bg-transparent px-1 pr-8 text-slate-700 text-sm ${
                   touched.newPassword && getNewPasswordError()
                     ? "border-red-500"
                     : "border-slate-200 focus:border-[#0a66c2]"
-                }`} 
+                }`}
                 placeholder="Enter new password"
-                required 
+                required
               />
-              <button 
+              <button
                 type="button"
                 onClick={() => setShowNewPassword(!showNewPassword)}
                 className="absolute right-0 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 transition text-xs p-1"
@@ -125,24 +154,30 @@ function ForgotPasswordMain() {
               Confirm Password
             </label>
             <div className="relative">
-              <input 
-                type={showConfirmPassword ? "text" : "password"} 
+              <input
+                type={showConfirmPassword ? "text" : "password"}
                 value={confirmPassword}
-                onChange={(e) => handleInputChange("confirmPassword", e.target.value)}
+                onChange={(e) =>
+                  handleInputChange("confirmPassword", e.target.value)
+                }
                 className={`w-full border-b-2 py-1.5 outline-none transition-all bg-transparent px-1 pr-8 text-slate-700 text-sm ${
                   touched.confirmPassword && getConfirmPasswordError()
                     ? "border-red-500"
                     : "border-slate-200 focus:border-[#0a66c2]"
-                }`} 
+                }`}
                 placeholder="Confirm new password"
-                required 
+                required
               />
-              <button 
+              <button
                 type="button"
                 onClick={() => setShowConfirmPassword(!showConfirmPassword)}
                 className="absolute right-0 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 transition text-xs p-1"
               >
-                {showConfirmPassword ? <FiEyeOff size={14} /> : <FiEye size={14} />}
+                {showConfirmPassword ? (
+                  <FiEyeOff size={14} />
+                ) : (
+                  <FiEye size={14} />
+                )}
               </button>
             </div>
             {touched.confirmPassword && getConfirmPasswordError() && (
@@ -153,12 +188,12 @@ function ForgotPasswordMain() {
           </div>
 
           {/* Button only shows when form is valid */}
-          <button 
-            type="submit" 
+          <button
+            type="submit"
             disabled={!isFormValid || loading}
             className={`w-full h-10 rounded-lg text-white font-bold transition-all shadow-md ${
-              !isFormValid || loading 
-                ? "bg-slate-300 cursor-not-allowed" 
+              !isFormValid || loading
+                ? "bg-slate-300 cursor-not-allowed"
                 : "bg-[#0a66c2] hover:bg-[#084d91]"
             }`}
           >
@@ -168,7 +203,13 @@ function ForgotPasswordMain() {
 
         <div className="mt-3 pt-3 border-t border-slate-100 text-center">
           <p className="text-slate-500 text-xs">
-            Back to login? <Link to="/login" className="text-[#0a66c2] font-semibold hover:underline">Sign in</Link>
+            Back to login?{" "}
+            <Link
+              to="/login"
+              className="text-[#0a66c2] font-semibold hover:underline"
+            >
+              Sign in
+            </Link>
           </p>
         </div>
       </div>

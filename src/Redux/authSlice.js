@@ -21,7 +21,7 @@ const authSlice = createSlice({
   reducers: {
     loginSuccess: (state, action) => {
 
-      if(action.payload.res === "sucessfull_candidate")
+      if(action.payload.res === "successful_candidate")
         { 
         state.isAuthenticated = true;
         state.logAuth = true;
@@ -63,9 +63,10 @@ const authSlice = createSlice({
       }
     },
     forgotauthentication : (state,action) => {
-      if(action.payload === "email_verified")
+      if(action.payload.status === "email_verified")
       {
         state.forgotAuth = true;
+        state.email=action.payload.email;
       }
     }
   }
