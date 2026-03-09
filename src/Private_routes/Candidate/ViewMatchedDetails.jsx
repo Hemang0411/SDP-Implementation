@@ -1,13 +1,41 @@
 import React, { useState } from "react";
 import { useSelector } from "react-redux";
 import { useLocation, useNavigate } from "react-router-dom";
-import Navbar from "../components/Navbar";
+import axios from "axios";
+import { toast } from "react-toastify";
+import Navbar from "../../components/Navbar";
 import { FiArrowLeft, FiMapPin, FiDollarSign, FiBriefcase } from "react-icons/fi";
 
-const ViewAppliedDetails = () => {
+const ViewMatchedDetails = () => {
   const location = useLocation();
   const navigate = useNavigate();
-  const { application } = location.state || {};
+  const { token, email, password, role } = useSelector((state) => state.auth);
+  const { application, candidateName } = location.state || {};
+  const [applying, setApplying] = useState(false);
+
+  const handleApply = async () => {
+    if (!application?.application_id) return;
+    
+    try {
+      setApplying(true);
+      await axios.post(
+        "https://skillbridge-backend-3-vqsm.onrender.com/api/candidate-detail/apply",
+        { application_id: application.application_id },
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            user: JSON.stringify({ email, password, role }),
+          }
+        }
+      );
+      toast.success("Application submitted successfully!");
+      navigate(-1);
+    } catch (error) {
+      toast.error(error.response?.data?.error || "Failed to submit application");
+    } finally {
+      setApplying(false);
+    }
+  };
 
   const handleBack = () => {
     navigate(-1);
@@ -18,7 +46,7 @@ const ViewAppliedDetails = () => {
       <Navbar />
       <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8 lg:py-12">
         
-        {/* Back Button - EXACT SAME */}
+        {/* Back Button */}
         <div className="mb-8">
           <button 
             onClick={handleBack}
@@ -31,7 +59,7 @@ const ViewAppliedDetails = () => {
 
         {application ? (
           <>
-            {/* Header Row - EXACT SAME */}
+            {/* Header Row */}
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 mb-12">
               <div className="lg:col-span-2">
                 <h1 className="text-3xl lg:text-4xl font-bold text-gray-900 mb-3 leading-tight">
@@ -44,7 +72,7 @@ const ViewAppliedDetails = () => {
               
               <div className="flex flex-wrap gap-3 justify-end items-end">
                 <span className={`px-4 py-2 rounded-lg text-sm font-semibold border ${
-                  application.status === 'Applied' 
+                  application.status === 'Matched' 
                     ? 'bg-green-50 text-green-800 border-green-200' 
                     : application.status === 'interview' 
                     ? 'bg-blue-50 text-blue-800 border-blue-200'
@@ -62,10 +90,10 @@ const ViewAppliedDetails = () => {
 
             <div className="grid grid-cols-1 xl:grid-cols-3 gap-8">
               
-              {/* Main Content - EXACT SAME */}
+              {/* Main Content */}
               <div className="xl:col-span-2">
                 
-                {/* Job Details - EXACT SAME */}
+                {/* Job Details */}
                 <div className="bg-white border border-gray-200 rounded-2xl shadow-sm overflow-hidden">
                   <div className="px-8 py-6 border-b border-gray-100 bg-gray-50">
                     <h2 className="text-xl font-semibold text-gray-900">Job Details</h2>
@@ -108,19 +136,21 @@ const ViewAppliedDetails = () => {
 
               </div>
 
-              {/* Action Sidebar - APPLIED VERSION */}
+              {/* Action Sidebar */}
               <div className="space-y-6">
                 <div className="bg-white border border-gray-200 rounded-2xl shadow-sm sticky top-8 p-8">
                   <div className="text-center mb-8 pb-8 border-b border-gray-100">
-                    <h3 className="text-xl font-bold text-gray-900 mb-2">Application Status</h3>
-                    <p className="text-gray-600 text-sm">Track your application progress</p>
+                    <h3 className="text-xl font-bold text-gray-900 mb-2">Apply to this position</h3>
+                    <p className="text-gray-600 text-sm">Perfect match opportunity</p>
                   </div>
                   
-                  <div className="text-center">
-                    <span className="px-6 py-3 bg-gray-100 text-gray-800 text-lg font-semibold rounded-xl border-2 border-gray-200">
-                      {application.status}
-                    </span>
-                  </div>
+                  <button 
+                    onClick={handleApply}
+                    disabled={applying}
+                    className="w-full bg-blue-600 text-white py-4 px-6 rounded-xl text-lg font-semibold shadow-md hover:shadow-lg hover:bg-blue-700 focus:outline-none focus:ring-4 focus:ring-blue-100 transition-all duration-200 disabled:bg-gray-400 disabled:cursor-not-allowed"
+                  >
+                    {applying ? "Applying..." : "Apply Now"}
+                  </button>
                 </div>
               </div>
             </div>
@@ -145,4 +175,4 @@ const ViewAppliedDetails = () => {
   );
 };
 
-export default ViewAppliedDetails;
+export default ViewMatchedDetails;

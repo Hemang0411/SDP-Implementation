@@ -10,7 +10,7 @@ import { MdEmail, MdPerson, MdPhone } from "react-icons/md";
 import { useDispatch, useSelector } from "react-redux";
 import { useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
-import Navbar from "../components/Navbar";
+import Navbar from "../../components/Navbar";
 
 const Candidate_Dashboard = () => {
   const dispatch = useDispatch();
@@ -89,13 +89,25 @@ const Candidate_Dashboard = () => {
     });
   };
 
-  // NEW: handleViewApplied function matching the same pattern
   const handleViewApplied = () => {
     navigate("/viewapplied", {
       state: {
         applications: [],
         candidate_id,
         type: "applied",
+        candidateName: full_name,
+        stats,
+      },
+    });
+  };
+
+  // ✅ CHANGE 1: Added handleViewResponses
+  const handleViewResponses = () => {
+    navigate("/viewresponse", {
+      state: {
+        applications: [],
+        candidate_id,
+        type: "responses",
         candidateName: full_name,
         stats,
       },
@@ -185,16 +197,16 @@ const Candidate_Dashboard = () => {
 
           {/* Right Column - Social Links & Edit Profile */}
           <div className="flex flex-col items-end gap-8 lg:w-80 flex-shrink-0">
-            {/* Social Links */}
+            {/* Social Links - BLUE LINK FORMAT */}
             <div className="space-y-2 w-full lg:w-auto text-right">
               {linkedin_url && (
                 <a
                   href={linkedin_url}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="block text-[#0a66c2] hover:text-[#004182] font-medium text-sm transition-colors group hover:underline"
+                  className="block text-[#008bdc] hover:text-blue-600 font-medium text-sm transition-colors group hover:underline"
                 >
-                  LinkedIn Profile
+                  LinkedIn
                 </a>
               )}
 
@@ -203,9 +215,9 @@ const Candidate_Dashboard = () => {
                   href={github_url}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="block text-gray-900 hover:text-gray-700 font-medium text-sm transition-colors group hover:underline"
+                  className="block text-[#008bdc] hover:text-blue-600 font-medium text-sm transition-colors group hover:underline"
                 >
-                  GitHub Profile
+                  GitHub
                 </a>
               )}
 
@@ -214,9 +226,9 @@ const Candidate_Dashboard = () => {
                   href={resume}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="block text-slate-700 hover:text-slate-900 font-medium text-sm transition-colors group hover:underline"
+                  className="block text-[#008bdc] hover:text-blue-600 font-medium text-sm transition-colors group hover:underline"
                 >
-                  Download Resume
+                  Resume
                 </a>
               )}
             </div>
@@ -238,7 +250,7 @@ const Candidate_Dashboard = () => {
 
         {/* ================= STATS CARDS ================= */}
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-6 mb-8">
-          {/* Applied - NOW PROPERLY HANDLED */}
+          {/* Applied */}
           <div className="bg-white border border-slate-200 rounded-2xl shadow-sm p-5 flex flex-col justify-between hover:shadow-md transition-all">
             <div className="flex items-center justify-between">
               <div className="flex items-center justify-center w-14 h-14 rounded-xl bg-blue-50 text-blue-600 text-2xl">
@@ -252,7 +264,7 @@ const Candidate_Dashboard = () => {
               Applied Jobs
             </h3>
             <button
-              onClick={handleViewApplied}  // ✅ Updated to use proper handler
+              onClick={handleViewApplied}
               className="mt-4 w-full bg-[#008bdc] text-white py-2 rounded-lg text-sm font-semibold hover:bg-blue-600 transition-all shadow-sm hover:shadow-md"
               disabled={statsLoading}
             >
@@ -282,7 +294,7 @@ const Candidate_Dashboard = () => {
             </button>
           </div>
 
-          {/* Company Response */}
+          {/* Company Response - ✅ CHANGE 1: Added navigation to /viewresponse */}
           <div className="bg-white border border-slate-200 rounded-2xl shadow-sm p-5 flex flex-col justify-between hover:shadow-md transition-all">
             <div className="flex items-center justify-between">
               <div className="flex items-center justify-center w-14 h-14 rounded-xl bg-purple-50 text-purple-600 text-2xl">
@@ -296,7 +308,7 @@ const Candidate_Dashboard = () => {
               Company Responses
             </h3>
             <button
-              onClick={() => toast.info("Coming Soon!")}
+              onClick={handleViewResponses} // ✅ Updated from toast.info
               className="mt-4 w-full bg-[#008bdc] text-white py-2 rounded-lg text-sm font-semibold hover:bg-blue-600 transition-all shadow-sm hover:shadow-md"
               disabled={statsLoading}
             >

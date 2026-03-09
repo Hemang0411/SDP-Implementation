@@ -4,7 +4,7 @@ import { FiArrowLeft, FiBriefcase } from "react-icons/fi";
 import { useSelector } from "react-redux";
 import { useLocation, useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
-import Navbar from "../components/Navbar";
+import Navbar from "../../components/Navbar";
 
 const ViewApplied = () => {
   const location = useLocation();
